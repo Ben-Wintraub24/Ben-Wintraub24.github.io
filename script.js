@@ -127,18 +127,9 @@ async function predictModel(){
   y = model.predict(image);
   
   // replaces the text in the result tag by the model prediction
-  // document.getElementById('result').innerHTML = "Prediction: " + y.argMax(1).dataSync();
+  document.getElementById('result').innerHTML = "Prediction: " + y.argMax(1).dataSync();
 
-  for (let i = 0; i < y.length; i++) {
-    const element = document.getElementById(`prediction-${i}`);
-    element.children[0].children[0].style.height = `${y[i] * 100}%`;
-    element.className =
-      y[i] === maxPrediction
-        ? "prediction-col top-prediction"
-        : "prediction-col";
-  }
-
-  console.log(y.dataSync().length)
+  // console.log(y.dataSync().length)
 
 }
 
