@@ -7,7 +7,7 @@ const input2 = document.getElementById('input2');
 const generateButton = document.getElementById('generate-button');
 const output = document.getElementById('output');
 
-env.localModelPath = "./models/"
+env.localModelPath = "/browser-embed/models/"
 env.allowRemoteModels = false;
 // env.backends.onnx.wasm.wasmPaths = '/wasm/';
 
