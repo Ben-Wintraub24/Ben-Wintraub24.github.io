@@ -1,138 +1,43 @@
-// define relevant variables
-var canvas = document.getElementById("canvas");
-var ctx = canvas.getContext('2d', { willReadFrequently: true });
-var dragging = false;
-var pos = { x: 0, y: 0 };
+import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.3.0';
 
+const input1 = document.getElementById('input1');
+const input2 = document.getElementById('input2');
+const generateButton = document.getElementById('generate-button');
+const output = document.getElementById('output');
 
-// define event listeners for both desktop and mobile
+const generateEmbeddings = await pipeline(
+  'feature-extraction',
+  'Xenova/all-MiniLM-L6-v2'
+);
 
-// nontouch
-canvas.addEventListener('mousedown',  engage);
-canvas.addEventListener('mousedown',  setPosition);
-canvas.addEventListener('mousemove',  draw);
-canvas.addEventListener('mouseup', disengage);
+generateButton.disabled = false;
 
-// touch
-canvas.addEventListener('touchstart', engage);
-canvas.addEventListener('touchmove', setPosition);
-canvas.addEventListener('touchmove', draw);
-canvas.addEventListener('touchend', disengage);
-
-// detect if it is a touch device
-function isTouchDevice() {
-  return (
-    ('ontouchstart' in window) ||
-    (navigator.maxTouchPoints > 0) ||
-    (navigator.msMaxTouchPoints > 0)
-  );
-}
-
-
-// define basic functions to detect click / release
-
-function engage() {
-  dragging = true;
-};
-
-function disengage() {
-  dragging = false;
-};
-
-
-// get the new position given a mouse / touch event
-function setPosition(e) {
-
-  if (isTouchDevice()) {
-  	var touch = e.touches[0];
-  	pos.x = touch.clientX - ctx.canvas.offsetLeft;
-  	pos.y = touch.clientY - ctx.canvas.offsetTop;
-  } else {
-  
-	  pos.x = e.clientX - ctx.canvas.offsetLeft;
-  	pos.y = e.clientY - ctx.canvas.offsetTop;
+function dotProduct(a, b) {
+  if (a.length !== b.length) {
+    throw new Error('Both arguments must have the same length');
   }
-}
 
+  let result = 0;
 
-// draws a line in a canvas if mouse is pressed
-function draw(e) {
-  
-  e.preventDefault();
-  e.stopPropagation();
-
-  // to draw the user needs to be engaged (dragging = True)
-  if (dragging) {
-
-    // begin drawing
-    ctx.beginPath();
-  
-    // attributes of the line
-    ctx.lineWidth = 40;
-    ctx.lineCap = 'round';
-    ctx.strokeStyle = 'red';
-
-    // get current position, move to new position, create line from current to new
-    ctx.moveTo(pos.x, pos.y);
-    setPosition(e);
-    ctx.lineTo(pos.x, pos.y);
-
-    // draw
-    ctx.stroke();
-
+  for (let i = 0; i < a.length; i++) {
+    result += a[i] * b[i];
   }
+
+  return result;
 }
 
+generateButton.addEventListener('click', async () => {
+  const output1 = await generateEmbeddings(input1.value, {
+    pooling: 'mean',
+    normalize: true,
+  });
 
+  const output2 = await generateEmbeddings(input2.value, {
+    pooling: 'mean',
+    normalize: true,
+  });
 
-// clear canvas
-function erase() {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-}
+  const similarity = dotProduct(output1.data, output2.data);
 
-
-// defines a TF model load function
-async function loadModel(){	
-  	
-  // loads the model
-  model = await tf.loadLayersModel('tensorflow/model.json');    
-  
-  // warm start the model. speeds up the first inference
-  model.predict(tf.zeros([1, 28, 28, 1]))
-  
-  // return model
-  return model
-}
-
-
-// gets an image tensor from a canvas
-function getData(){
-  return ctx.getImageData(0, 0, canvas.width, canvas.height);
-}
-
-
-// defines the model inference function
-async function predictModel(){
-    
-  // gets image data
-  imageData = getData();
-  
-  // converts from a canvas data object to a tensor
-  image = tf.browser.fromPixels(imageData)
-  
-  // pre-process image
-  image = tf.image.resizeBilinear(image, [28,28]).sum(2).expandDims(0).expandDims(-1)
-  
-  // gets model prediction
-  y = model.predict(image);
-  
-  // replaces the text in the result tag by the model prediction
-  document.getElementById('result').innerHTML = "Prediction: " + y.argMax(1).dataSync();
-
-  // console.log(y.dataSync().length)
-
-}
-
-// loads the model
-var model = loadModel()
-var myinterval = setInterval(predictModel, 75)
+  output.innerText = similarity;
+});
