@@ -1,3 +1,3 @@
 # Transformers.js: Python who?
 
-This was actually suprisingly performant.
+I didn't know it was possible to get a negative lighthouse performance score.
