@@ -7,7 +7,7 @@ const output = document.getElementById('output');
 
 const generateEmbeddings = await pipeline(
   'feature-extraction',
-  'Xenova/all-MiniLM-L6-v2'
+  'thenlper/gte-small'
 );
 
 generateButton.disabled = false;
