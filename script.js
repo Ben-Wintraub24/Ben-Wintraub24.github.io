@@ -1,4 +1,6 @@
+console.log("loading")
 import { pipeline } from 'https://cdn.jsdelivr.net/npm/@xenova/transformers@2.3.0';
+console.log("loaded transformers")
 
 const input1 = document.getElementById('input1');
 const input2 = document.getElementById('input2');
@@ -9,6 +11,8 @@ const generateEmbeddings = await pipeline(
   'feature-extraction',
   'thenlper/gte-small'
 );
+
+console.log("loaded transformers")
 
 generateButton.disabled = false;
 
